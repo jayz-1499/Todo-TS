@@ -1,15 +1,26 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 // import { RootState } from '../../app/store';
 
 export interface TodoState {
   todo: [];
-  status: 'ALL' | 'ACTIVE'|'COMPLETE';
+  status: 'ALL' | 'ACTIVE' | 'COMPLETE';
 }
 type data = {
   id: string;
   content: string;
   status: boolean;
 };
+const getList = ()=>{
+  const data = localStorage.getItem('todo');
+    if(data === null){
+      return '';
+    }else{
+      return data;
+    }
+}
+export const getData: any = createAsyncThunk('todos/getData', async () => {
+ return JSON.parse(getList());
+});
 const initialState: TodoState = {
   todo: [],
   status: 'ALL',
@@ -96,6 +107,11 @@ const todoSlice = createSlice({
     ) => {
       state.status = action.payload;
     },
+  },
+  extraReducers: (buider) => {
+    buider.addCase(getData.fulfilled, (state, action) => {
+     state.todo = action.payload;
+    });
   },
 });
 export const {

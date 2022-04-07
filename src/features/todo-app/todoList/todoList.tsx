@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectTodo,selectType } from '../todoSlice';
+import { selectTodo, selectType } from '../todoSlice';
 import {
   removeData,
   updateStatus,
   updateContent,
+  getData
 } from '../../../features/todo-app/todoSlice';
 
 export interface TodoListProps {}
@@ -13,6 +14,7 @@ type data = {
   content: string;
   status: boolean;
 };
+
 export default function TodoList(props: TodoListProps) {
   const dispatch = useDispatch();
   const todo1 = useSelector(selectTodo);
@@ -20,10 +22,24 @@ export default function TodoList(props: TodoListProps) {
   const [hide, setHide] = useState(false);
   const [inputId, setInputID] = useState('');
   const [content, setContent] = useState('');
+  const [load, setLoad] = useState(false);
   console.log(todo1);
   const handleDelete = (todo: data) => {
     dispatch(removeData(todo.id));
   };
+
+  useEffect(() => {
+     dispatch(getData());
+  },[]);
+  useEffect(() => {
+    if(load){
+
+      localStorage.setItem('todo',JSON.stringify(todo1));
+    }else{
+      setLoad(true);
+    }
+  },[todo1]);
+
   const handleChangeCheckBox = (
     e: React.ChangeEvent<HTMLInputElement>,
     todoId: string,
@@ -44,22 +60,22 @@ export default function TodoList(props: TodoListProps) {
   const handleUpdate = (
     e: React.KeyboardEvent<HTMLInputElement>,
     idTodo: string,
-    content:string
+    content: string
   ) => {
     if (e.key === 'Enter') {
-        e.preventDefault();
-        const action = updateContent({
-          id: idTodo,
-          content: content,
-        });
-        dispatch(action);
-        setHide(false);
-      }
+      e.preventDefault();
+      const action = updateContent({
+        id: idTodo,
+        content: content,
+      });
+      dispatch(action);
+      setHide(false);
+    }
   };
   const handeChangeNewContent = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
   };
-  const display = todo1.filter((item:data) => {
+  const display = todo1.filter((item: data) => {
     switch (typeData) {
       case 'ACTIVE':
         return !item.status;
@@ -70,8 +86,7 @@ export default function TodoList(props: TodoListProps) {
     }
   });
   console.log(typeData);
-  
-  
+
   return (
     <>
       {display.map((item: data) => (
@@ -99,16 +114,16 @@ export default function TodoList(props: TodoListProps) {
                   {item.content}
                 </label>
                 {item.id === inputId && (
-                    <input
-                      type="text"
-                      className={`ml-2 w-3/4 form-check-label inline-block text-gray-800 text-lg ${
-                        hide === false && item.id === inputId ? 'hidden' : ''
-                      }`}
-                      value={content}
-                      onChange={handeChangeNewContent}
-                      onKeyPress={(e) => handleUpdate(e, item.id, content)}
-                      autoFocus
-                    />
+                  <input
+                    type="text"
+                    className={`ml-2 w-3/4 form-check-label inline-block text-gray-800 text-lg ${
+                      hide === false && item.id === inputId ? 'hidden' : ''
+                    }`}
+                    value={content}
+                    onChange={handeChangeNewContent}
+                    onKeyPress={(e) => handleUpdate(e, item.id, content)}
+                    autoFocus
+                  />
                 )}
                 <input
                   type="button"
